@@ -10,32 +10,60 @@ import {
   TouchableOpacity,
 } from "react-native";
 
-import { useEffect,useState } from "react";
-
+import { useEffect, useState } from "react";
 import Icon from "@expo/vector-icons/MaterialIcons";
+import { commonStyles } from "../Style/CommonStyles";
+import { get } from "react-native/Libraries/Utilities/PixelRatio";
+
+
+export const API = "http://4977-2804-15e4-8060-600-108b-74d8-46c6-836d.ngrok.io";
+
+
+export default function Home({navigation}) {
+
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState (false)
 
 
 
-export default function Home() {
+  function navigateToForm() {
+    navigation.navigate('Forms')
+  }
 
-    const [tasks, setTasks] = useState ([])
+  function deleteTask (taskId){
+    fetch (API + '/tasks/' + taskId, {
+      method: 'DELETE'
+    })
+    .then (() => {
+      getTasks()
+      setLoading(true)
+    })
+    .catch (() => alert ('Houve um erro ao tentar deletar'))
 
-    useEffect(() => {
-        fetch ('http://2fe4-2804-15e4-8060-600-9015-983b-ce42-845a.ngrok.io/tasks')
-        .then (async (response) => {
-            const data = await response.json()
-            setTasks(data)
-        })
+  }
 
-        .catch (() => alert ('Houve um erro ao recuperar a lista de tarefas'))
-    },[])
+  function getTasks () {
+    fetch(API + "/tasks")
+      .then(async (response) => {
+        const data = await response.json();
+        console.log(data);
+        setTasks(data);
+        setLoading(false)
+      })
+      .catch(() =>
+        console.log("Houve um erro ao recuperar a lista de tarefas")
+      );
+  }
 
+  useEffect(() => {
+    getTasks ()
+  }, []);
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{flex: 1}}>
       <StatusBar backgroundColor="tomato" />
       <View style={styles.header}>
-        <Text style={styles.title}>ToDo-List</Text>
+        <Text style={styles.title}>To Do-List</Text>
         <Image
           style={styles.thumb}
           source={{
@@ -44,27 +72,40 @@ export default function Home() {
         />
       </View>
 
-      <TextInput
-        style={styles.input}
-        selectionColor="tomato"
-        placeholder="Pesquise sua tarefa"
-        autoCapitalize="none"
-      />
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={commonStyles.input}
+          selectionColor="tomato"
+          placeholder="Pesquise sua tarefa"
+          autoCapitalize="none"
+        />
+        <TouchableOpacity style={styles.buttonAdd} onPress={navigateToForm}>
+          <Icon name="add-comment" size={32} color="blue"  />
+        </TouchableOpacity>
+      </View>
+
+      {loading === true && 
+      <View>
+        <Icon name= 'update' size= {50} color= 'blue' />
+      </View>
+        }
 
       <ScrollView>
-        <View style={styles.cardTask}>
-          <TouchableOpacity style={styles.descripiontCard}>
-            <Text>Estudar Programação</Text>
-          </TouchableOpacity >
+        {tasks.map((task) => (
+          <View style={styles.cardTask} key={task.id}>
+            <TouchableOpacity style={styles.descripiontCard}>
+              <Text>{task.description}</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.buttonCheck}>
-            <Icon name='update' size={30} color='blue'/>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.buttonCheck}>
+              <Icon name="update" size={30} color="blue" />
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.buttonDelete}>
-            <Icon name='delete' size={30} color='blue'/>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity style={styles.buttonDelete} onPress={() => deleteTask (task.id)}>
+              <Icon name="delete-outline" size={30} color="blue" />
+            </TouchableOpacity>
+          </View>
+        ))}
       </ScrollView>
     </SafeAreaView>
   );
@@ -90,37 +131,45 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
 
-  input: {
-    height: 44,
-    width: "90%",
-    borderColor: "tomate",
-    borderWidth: 1,
-    borderRadius: 5,
-    marginHorizontal: 20,
-    padding: 10,
-  },
-
-  cardTask:{
+  cardTask: {
     height: 50,
-    width: '90%',
-    backgroundColor: 'tomato',
-    borderRadius: 10,
+    width: "90%",
+    backgroundColor: "tomato",
+    borderRadius: 5,
     padding: 5,
-    flexDirection: 'row',
+    flexDirection: "row",
     margin: 20,
-    alignItems: 'center',
-    justifyContent: 'space-around'
+    alignItems: "center",
+    padding: 5,
+    justifyContent: "space-around",
   },
 
   descripiontCard: {
-    width: '60%'
+    width: "60%",
   },
 
   buttonDelete: {
-    width: '15%'
+    width: "15%",
   },
 
   buttonCheck: {
-    width: '15%'    
+    width: "15%",
   },
+
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: 20
+  },
+
+  buttonAdd: {
+    width: 50,
+    height: 50,
+    backgroundColor: 'tomato',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+    
 });
