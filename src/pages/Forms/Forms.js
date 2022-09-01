@@ -1,17 +1,27 @@
 import { View, TextInput, StyleSheet, Button } from "react-native";
 import { commonStyles } from "../Style/CommonStyles";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
 import { API } from "../Home/Home";
 
 export default function Forms() {
 
   const [description, setDescription] = useState("");
+  const [title, setTitle] = useState('')
+
+  useEffect(() => {
+    console.log('entrei aqui')
+    if (description === 'estudar') {
+      alert ("estude mesmo")
+    }
+  },[description])
 
   function addNewTask() {
     if (description.length > 3) {
       fetch(API + "/tasks", {
         method: "POST",
         body: JSON.stringify({
+          title: title,
           description: description,
           status: false,
         }),
@@ -22,6 +32,7 @@ export default function Forms() {
         .then(async() => {
           alert("Tarefa cadastrada com sucesso");
           setDescription ('')
+          setTitle ('')
           //const data = await response.json()
           //console.log(data)
         })
@@ -36,6 +47,16 @@ export default function Forms() {
       <TextInput
         style={{ ...commonStyles.input, marginBottom: 20 }}
         selectionColor="tomato"
+        placeholder="Digite seu titulo"
+        autoCapitalize="none"
+        value={title}
+        onChangeText={setTitle}
+        autoFocus
+      />
+
+      <TextInput
+        style={{ ...commonStyles.input, marginBottom: 20 }}
+        selectionColor="tomato"
         placeholder="Digite sua tarefa"
         autoCapitalize="none"
         value={description}
@@ -44,6 +65,7 @@ export default function Forms() {
 
       <Button title="Adicionar" color="tomato" onPress={addNewTask} />
     </View>
+    
   );
 }
 

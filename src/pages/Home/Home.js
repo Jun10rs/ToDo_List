@@ -11,56 +11,91 @@ import {
 } from "react-native";
 
 import { useEffect, useState } from "react";
+
 import Icon from "@expo/vector-icons/MaterialIcons";
+
 import { commonStyles } from "../Style/CommonStyles";
-import { get } from "react-native/Libraries/Utilities/PixelRatio";
 
+import { useIsFocused } from "@react-navigation/native";
 
-export const API = "http://4977-2804-15e4-8060-600-108b-74d8-46c6-836d.ngrok.io";
+export const API =
+  "http://41e7-2804-15e4-8060-600-b558-af79-cba8-4468.ngrok.io";
 
+export default function Home({ navigation }) {
 
-export default function Home({navigation}) {
+  const telaFocada = useIsFocused ()
 
   const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState (false)
-
-
+  const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState ('')
 
   function navigateToForm() {
-    navigation.navigate('Forms')
+    navigation.navigate("Forms");
   }
 
-  function deleteTask (taskId){
-    fetch (API + '/tasks/' + taskId, {
-      method: 'DELETE'
+  function deleteTask(taskId) {
+    fetch(API + "/tasks/" + taskId, {
+      method: "DELETE",
     })
-    .then (() => {
-      getTasks()
-      setLoading(true)
-    })
-    .catch (() => alert ('Houve um erro ao tentar deletar'))
-
+      .then(() => {
+        getTasks();
+        setLoading(true)
+      })
+      .catch(() => alert("Houve um erro ao tentar deletar"));
   }
 
-  function getTasks () {
-    fetch(API + "/tasks")
+  function getTasks() {
+    //fetch(API + "/tasks" + '?description=' +  searchText) busca exatamente a palavra escrita
+    fetch(API + "/tasks" + '?description_like=' +  searchText)
       .then(async (response) => {
         const data = await response.json();
         console.log(data);
         setTasks(data);
         setLoading(false)
       })
-      .catch(() =>
-        console.log("Houve um erro ao recuperar a lista de tarefas")
-      );
+      .catch((error) =>
+        console.log(error));
+  }
+
+  function showDescripitionTask(description, title) {
+    alert(description, title);
+  }
+
+  function searchTasks (){
+    getTasks ()
+  }
+
+  function updateTask(taskId) {
+    fetch(API + "/tasks/" + taskId, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        status: true,
+      }),
+    })
+      .then(() => {
+        alert("Atualizado com sucesso")
+        getTasks ()
+      })
+      .catch(() => alert("Houve um erro ao tentar atualizar a lista"));
   }
 
   useEffect(() => {
-    getTasks ()
-  }, []);
+    if(telaFocada === true) {
+      getTasks();
+    //setLoading(true)
+    }
+  }, [telaFocada]);
+
+  useEffect (() => {
+    getTasks()
+
+  },[searchText])
 
   return (
-    <SafeAreaView style={{flex: 1}}>
+    <SafeAreaView style={{ flex: 1 }}>
       <StatusBar backgroundColor="tomato" />
       <View style={styles.header}>
         <Text style={styles.title}>To Do-List</Text>
@@ -78,30 +113,53 @@ export default function Home({navigation}) {
           selectionColor="tomato"
           placeholder="Pesquise sua tarefa"
           autoCapitalize="none"
+          value={searchText}
+          onChangeText ={setSearchText}
         />
-        <TouchableOpacity style={styles.buttonAdd} onPress={navigateToForm}>
-          <Icon name="add-comment" size={32} color="blue"  />
+
+        <TouchableOpacity style={styles.buttonAdd} onPress={searchTasks}>
+          <Icon name="search" size={32} color="blue" />
         </TouchableOpacity>
+        <TouchableOpacity style={styles.buttonAdd} onPress={navigateToForm}>
+          <Icon name="add-comment" size={32} color="blue" />
+        </TouchableOpacity>
+        
       </View>
 
-      {loading === true && 
-      <View>
-        <Icon name= 'update' size= {50} color= 'blue' />
-      </View>
-        }
+      {loading === true && <Text>Loading</Text>}
 
       <ScrollView>
         {tasks.map((task) => (
-          <View style={styles.cardTask} key={task.id}>
-            <TouchableOpacity style={styles.descripiontCard}>
-              <Text>{task.description}</Text>
+          <View 
+            style={{...styles.cardTask, backgroundColor: task.status === true ? 'green' : 'tomato'}} 
+            key={task.id}
+          >
+            <TouchableOpacity
+              style={styles.descripiontCard}
+              onPress={() => showDescripitionTask(task.description)}
+            >
+              <Text numberOfLines={1} ellipsizeMode="tail">
+                {task.description}
+              </Text>
+              <Text numberOfLines={1} ellipsizeMode="tail">
+                {task.title}
+              </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.buttonCheck}>
+            {
+              task .status === false  &&
+              <TouchableOpacity
+              style={styles.buttonCheck}
+              onPress={() => updateTask(task.id)}
+            >
               <Icon name="update" size={30} color="blue" />
             </TouchableOpacity>
+            }
 
-            <TouchableOpacity style={styles.buttonDelete} onPress={() => deleteTask (task.id)}>
+            <TouchableOpacity
+              style={styles.buttonDelete}
+              onPress={() => deleteTask(task.id)}
+            >
               <Icon name="delete-outline" size={30} color="blue" />
             </TouchableOpacity>
           </View>
@@ -132,7 +190,7 @@ const styles = StyleSheet.create({
   },
 
   cardTask: {
-    height: 50,
+    height: 60,
     width: "90%",
     backgroundColor: "tomato",
     borderRadius: 5,
@@ -157,19 +215,18 @@ const styles = StyleSheet.create({
   },
 
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginHorizontal: 20
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginHorizontal: 20,
   },
 
   buttonAdd: {
     width: 50,
     height: 50,
-    backgroundColor: 'tomato',
+    backgroundColor: "tomato",
     borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center'
+    justifyContent: "center",
+    alignItems: "center",
   },
-    
 });
