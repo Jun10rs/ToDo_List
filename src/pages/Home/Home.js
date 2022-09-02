@@ -8,6 +8,7 @@ import {
   TextInput,
   ScrollView,
   TouchableOpacity,
+  Alert
 } from "react-native";
 
 import { useEffect, useState } from "react";
@@ -18,16 +19,20 @@ import { commonStyles } from "../Style/CommonStyles";
 
 import { useIsFocused } from "@react-navigation/native";
 
+import { format, parseISO } from "date-fns";
+import ptBR from "date-fns/locale/pt-BR";
+
 export const API =
-  "http://41e7-2804-15e4-8060-600-b558-af79-cba8-4468.ngrok.io";
+  "http://64bf-2804-15e4-8060-600-ef52-1060-f01b-8854.ngrok.io"
+
 
 export default function Home({ navigation }) {
 
-  const telaFocada = useIsFocused ()
+  const telaFocada = useIsFocused()
 
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [searchText, setSearchText] = useState ('')
+  const [searchText, setSearchText] = useState('')
 
   function navigateToForm() {
     navigation.navigate("Forms");
@@ -46,7 +51,7 @@ export default function Home({ navigation }) {
 
   function getTasks() {
     //fetch(API + "/tasks" + '?description=' +  searchText) busca exatamente a palavra escrita
-    fetch(API + "/tasks" + '?description_like=' +  searchText)
+    fetch(API + "/tasks" + '?description_like=' + searchText)
       .then(async (response) => {
         const data = await response.json();
         console.log(data);
@@ -57,12 +62,15 @@ export default function Home({ navigation }) {
         console.log(error));
   }
 
-  function showDescripitionTask(description, title) {
-    alert(description, title);
+  function showDescripitionTask(description, category) {
+    Alert.alert(
+      description,
+      category,
+    );
   }
 
-  function searchTasks (){
-    getTasks ()
+  function searchTasks() {
+    getTasks()
   }
 
   function updateTask(taskId) {
@@ -77,22 +85,22 @@ export default function Home({ navigation }) {
     })
       .then(() => {
         alert("Atualizado com sucesso")
-        getTasks ()
+        getTasks()
       })
       .catch(() => alert("Houve um erro ao tentar atualizar a lista"));
   }
 
   useEffect(() => {
-    if(telaFocada === true) {
+    if (telaFocada === true) {
       getTasks();
-    //setLoading(true)
+      //setLoading(true)
     }
   }, [telaFocada]);
 
-  useEffect (() => {
+  useEffect(() => {
     getTasks()
 
-  },[searchText])
+  }, [searchText])
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -102,7 +110,7 @@ export default function Home({ navigation }) {
         <Image
           style={styles.thumb}
           source={{
-            uri: "https://i.pinimg.com/originals/0d/9e/6b/0d9e6b830642bb88c37f2decc146bbaf.jpg",
+            uri: "http://76e1-2804-15e4-8060-600-ef52-1060-f01b-8854.ngrok.iog",
           }}
         />
       </View>
@@ -114,7 +122,7 @@ export default function Home({ navigation }) {
           placeholder="Pesquise sua tarefa"
           autoCapitalize="none"
           value={searchText}
-          onChangeText ={setSearchText}
+          onChangeText={setSearchText}
         />
 
         <TouchableOpacity style={styles.buttonAdd} onPress={searchTasks}>
@@ -123,44 +131,44 @@ export default function Home({ navigation }) {
         <TouchableOpacity style={styles.buttonAdd} onPress={navigateToForm}>
           <Icon name="add-comment" size={32} color="blue" />
         </TouchableOpacity>
-        
+
       </View>
 
       {loading === true && <Text>Loading</Text>}
 
       <ScrollView>
         {tasks.map((task) => (
-          <View 
-            style={{...styles.cardTask, backgroundColor: task.status === true ? 'green' : 'tomato'}} 
+          <View
+            style={{ ...styles.cardTask, backgroundColor: task.status === true ? 'green' : 'tomato' }}
             key={task.id}
           >
             <TouchableOpacity
               style={styles.descripiontCard}
-              onPress={() => showDescripitionTask(task.description)}
+              onPress={() => showDescripitionTask(task.description, task.category)}
             >
               <Text numberOfLines={1} ellipsizeMode="tail">
                 {task.description}
               </Text>
               <Text numberOfLines={1} ellipsizeMode="tail">
-                {task.title}
+                {format(parseISO(task.date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
               </Text>
             </TouchableOpacity>
 
             {
-              task .status === false  &&
+              task.status === false &&
               <TouchableOpacity
-              style={styles.buttonCheck}
-              onPress={() => updateTask(task.id)}
-            >
-              <Icon name="update" size={30} color="blue" />
-            </TouchableOpacity>
+                style={styles.buttonCheck}
+                onPress={() => updateTask(task.id)}
+              >
+                <Icon name="update" size={30} color="blue" />
+              </TouchableOpacity>
             }
 
             <TouchableOpacity
               style={styles.buttonDelete}
               onPress={() => deleteTask(task.id)}
             >
-              <Icon name="delete-outline" size={30} color="blue" />
+              <Icon name="delete" size={30} color="blue" />
             </TouchableOpacity>
           </View>
         ))}

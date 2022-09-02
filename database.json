@@ -1,37 +1,11 @@
 {
   "tasks": [
     {
-      "description": "cheesecake labs",
-      "status": true,
-      "id": 1
-    },
-    {
-      "description": "estudae Java script",
-      "status": true,
-      "id": 2
-    },
-    {
-      "description": "clinicorp solutions",
-      "status": true,
-      "id": 3
-    },
-    {
-      "title": "react native",
-      "description": "mobile",
-      "status": true,
-      "id": 4
-    },
-    {
-      "title": "teste",
-      "description": "teste",
-      "status": true,
-      "id": 5
-    },
-    {
-      "title": "ps4",
-      "description": "jogar",
+      "description": "entrei aqui",
       "status": false,
-      "id": 6
+      "category": "casa",
+      "date": "2022-09-01",
+      "id": 1
     }
   ]
 }
